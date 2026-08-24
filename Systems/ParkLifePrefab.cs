@@ -32,10 +32,15 @@ namespace ParkLife.Systems
     {
       base.GetArchetypeComponents(components);
       components.Add(ComponentType.ReadWrite<ParkLife>());
+      // The built-in area systems expect every district-shaped polygon to
+      // carry these base components. ParkLife stores its own rules separately
+      // but still uses the district drawing/area engine for geometry.
+      components.Add(ComponentType.ReadWrite<District>());
       components.Add(ComponentType.ReadWrite<Geometry>());
       components.Add(ComponentType.ReadWrite<LabelExtents>());
       components.Add(ComponentType.ReadWrite<LabelVertex>());
       components.Add(ComponentType.ReadWrite<ParkLifeModifier>());
+      components.Add(ComponentType.ReadWrite<DistrictModifier>());
       components.Add(ComponentType.ReadWrite<Policy>());
     }
 

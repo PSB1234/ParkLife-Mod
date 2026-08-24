@@ -62,18 +62,30 @@ namespace ParkLife.Systems
         return;
       }
 
-      // Runtime-created prefabs are added after the game's normal prefab
-      // initialization pass. Complete UIObject's LateInitialize work here so
-      // the existing Areas toolbar receives our fourth entry.
+      // AddPrefab only creates the prefab entity. Because this prefab is
+      // registered after the normal prefab initialization pass, run the same
+      // initialization hooks here. AreaPrefab.LateInitialize creates the
+      // area-entity archetype that AreaToolSystem needs when it draws a
+      // polygon; without it the game crashes as soon as the tool is used.
       Entity parkPrefabEntity = m_PrefabSystem.GetEntity(parkPrefab);
-      Entity areasGroupEntity = m_PrefabSystem.GetEntity(districtUI.m_Group);
-      EntityManager.SetComponentData(parkPrefabEntity, new UIObjectData
+      parkPrefab.Initialize(EntityManager, parkPrefabEntity);
+      parkUI.Initialize(EntityManager, parkPrefabEntity);
+      parkPrefab.LateInitialize(EntityManager, parkPrefabEntity);
+      parkUI.LateInitialize(EntityManager, parkPrefabEntity);
+
+      // AreaToolSystem reads AreaGeometryData from the prefab while it builds
+      // the dotted polygon preview. Runtime-created prefabs start with the
+      // default AreaType.Lot value, so copy the District prefab's geometry
+      // settings to make ParkLife use the district-style area drawing rules.
+      Entity districtPrefabEntity = m_PrefabSystem.GetEntity(districtPrefab);
+      if (EntityManager.HasComponent<AreaGeometryData>(districtPrefabEntity) &&
+          EntityManager.HasComponent<AreaGeometryData>(parkPrefabEntity))
       {
-        m_Group = areasGroupEntity,
-        m_Priority = parkUI.m_Priority
-      });
-      EntityManager.GetBuffer<UIGroupElement>(areasGroupEntity).Add(
-        new UIGroupElement(parkPrefabEntity));
+        EntityManager.SetComponentData(
+          parkPrefabEntity,
+          EntityManager.GetComponentData<AreaGeometryData>(districtPrefabEntity));
+      }
+
     }
   }
 }

@@ -11,22 +11,21 @@ namespace ParkLife.Systems
   public partial class ParkLifeUISystem : UISystemBase
   {
     private const string kGroup = "parklife";
-    private ParkLifeAreaSystem m_ParkLifeAreaSystem;
+    private ParkLifeSection m_ParkLifeAreaSystem;
     private SelectedInfoUISystem m_SelectedInfoUISystem;
 
     protected override void OnCreate()
     {
       base.OnCreate();
-      m_ParkLifeAreaSystem = World.GetOrCreateSystemManaged<ParkLifeAreaSystem>();
+      m_ParkLifeAreaSystem = World.GetOrCreateSystemManaged<ParkLifeSection>();
       m_SelectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
 
       AddUpdateBinding(new GetterValueBinding<bool>(kGroup, "selectedPark", HasSelectedPark));
-      AddUpdateBinding(new GetterValueBinding<bool>(kGroup, "ticketsEnabled", () => GetSelectedPark().m_TicketsEnabled));
-      AddUpdateBinding(new GetterValueBinding<bool>(kGroup, "dogsAllowed", () => GetSelectedPark().m_DogsAllowed));
-      AddUpdateBinding(new GetterValueBinding<bool>(kGroup, "bicyclesAllowed", () => GetSelectedPark().m_BicyclesAllowed));
+      AddUpdateBinding(new GetterValueBinding<bool>(kGroup, "ticketsEnabled", () => HasOption(ParkOption.TicketsEnabled)));
+      AddUpdateBinding(new GetterValueBinding<bool>(kGroup, "dogsAllowed", () => HasOption(ParkOption.DogsAllowed)));
+      AddUpdateBinding(new GetterValueBinding<bool>(kGroup, "bicyclesAllowed", () => HasOption(ParkOption.BicyclesAllowed)));
       AddUpdateBinding(new GetterValueBinding<int>(kGroup, "ticketPrice", () => GetSelectedPark().m_TicketPrice));
 
-      AddBinding(new TriggerBinding(kGroup, "drawPark", m_ParkLifeAreaSystem.StartDrawingPark));
       AddBinding(new TriggerBinding<bool>(kGroup, "setTicketsEnabled", value => SetSelectedPark(value, null, null, null)));
       AddBinding(new TriggerBinding<bool>(kGroup, "setDogsAllowed", value => SetSelectedPark(null, value, null, null)));
       AddBinding(new TriggerBinding<bool>(kGroup, "setBicyclesAllowed", value => SetSelectedPark(null, null, value, null)));
@@ -35,27 +34,39 @@ namespace ParkLife.Systems
 
     private bool HasSelectedPark()
     {
-      return EntityManager.HasComponent<ParkLifeArea>(m_SelectedInfoUISystem.selectedEntity);
+      return EntityManager.HasComponent<ParkLife>(m_SelectedInfoUISystem.selectedEntity);
     }
 
-    private ParkLifeArea GetSelectedPark()
+    private ParkLife GetSelectedPark()
     {
-      return HasSelectedPark() ? EntityManager.GetComponentData<ParkLifeArea>(m_SelectedInfoUISystem.selectedEntity) : default;
+      return HasSelectedPark() ? EntityManager.GetComponentData<ParkLife>(m_SelectedInfoUISystem.selectedEntity) : default;
     }
 
     private void SetSelectedPark(bool? ticketsEnabled, bool? dogsAllowed, bool? bicyclesAllowed, int? ticketPrice)
     {
       Entity selected = m_SelectedInfoUISystem.selectedEntity;
-      if (!EntityManager.HasComponent<ParkLifeArea>(selected))
+      if (!EntityManager.HasComponent<ParkLife>(selected))
       {
         return;
       }
-      ParkLifeArea park = EntityManager.GetComponentData<ParkLifeArea>(selected);
-      if (ticketsEnabled.HasValue) park.m_TicketsEnabled = ticketsEnabled.Value;
-      if (dogsAllowed.HasValue) park.m_DogsAllowed = dogsAllowed.Value;
-      if (bicyclesAllowed.HasValue) park.m_BicyclesAllowed = bicyclesAllowed.Value;
+      ParkLife park = EntityManager.GetComponentData<ParkLife>(selected);
+      if (ticketsEnabled.HasValue) SetOption(ref park, ParkOption.TicketsEnabled, ticketsEnabled.Value);
+      if (dogsAllowed.HasValue) SetOption(ref park, ParkOption.DogsAllowed, dogsAllowed.Value);
+      if (bicyclesAllowed.HasValue) SetOption(ref park, ParkOption.BicyclesAllowed, bicyclesAllowed.Value);
       if (ticketPrice.HasValue) park.m_TicketPrice = ticketPrice.Value;
       EntityManager.SetComponentData(selected, park);
+    }
+
+    private bool HasOption(ParkOption option)
+    {
+      if (!HasSelectedPark()) return false;
+      return (GetSelectedPark().m_OptionMask & option) == option;
+    }
+
+    private static void SetOption(ref ParkLife park, ParkOption option, bool enabled)
+    {
+      if (enabled) park.m_OptionMask |= option;
+      else park.m_OptionMask &= ~option;
     }
   }
 }

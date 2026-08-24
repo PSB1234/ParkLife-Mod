@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 const MOD = require("./mod.json");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CSSPresencePlugin } = require("./tools/css-presence");
@@ -107,6 +108,16 @@ module.exports = {
   plugins: [
     new MiniCssExtractPlugin(),
     new CSSPresencePlugin(),
+    {
+      apply(compiler) {
+        compiler.hooks.afterEmit.tap("CopyParkLifeIcon", () => {
+          const source = path.join(__dirname, "src", "assets", "park-area.svg");
+          const target = path.join(OUTPUT_DIR, "images", "park-area.svg");
+          fs.mkdirSync(path.dirname(target), { recursive: true });
+          fs.copyFileSync(source, target);
+        });
+      },
+    },
     {
       apply(compiler) {
         let runCount = 0;

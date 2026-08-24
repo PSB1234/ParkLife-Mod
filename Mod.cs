@@ -16,7 +16,9 @@ namespace ParkLife
       if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
         log.Info($"Current mod asset at {asset.path}");
 
+      updateSystem.UpdateAt<ParkLifePrefabSystem>(SystemUpdatePhase.PrefabUpdate);
       updateSystem.UpdateAt<ParkLifeAreaSystem>(SystemUpdatePhase.PostSimulation);
+      updateSystem.UpdateAt<ParkLifeSection>(SystemUpdatePhase.PostSimulation);
       updateSystem.UpdateAt<ParkLifeUISystem>(SystemUpdatePhase.UIUpdate);
     }
 

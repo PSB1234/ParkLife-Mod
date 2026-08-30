@@ -20,8 +20,7 @@ namespace ParkLife.Systems
     public override void GetPrefabComponents(HashSet<ComponentType> components)
     {
       base.GetPrefabComponents(components);
-      // The game only has fixed area geometry categories. DistrictData makes
-      // this use the district-shaped drawing rules instead of Surface area rules.
+      // DistrictData makes this use the district-shaped point drawing rules.
       components.Add(ComponentType.ReadWrite<DistrictData>());
       components.Add(ComponentType.ReadWrite<ParkLifeData>());
       components.Add(ComponentType.ReadWrite<AreaNameData>());
@@ -32,9 +31,8 @@ namespace ParkLife.Systems
     {
       base.GetArchetypeComponents(components);
       components.Add(ComponentType.ReadWrite<ParkLife>());
-      // The built-in area systems expect every district-shaped polygon to
-      // carry these base components. ParkLife stores its own rules separately
-      // but still uses the district drawing/area engine for geometry.
+      // The built-in district point editor and renderer require these
+      // components on every district-shaped area.
       components.Add(ComponentType.ReadWrite<District>());
       components.Add(ComponentType.ReadWrite<Geometry>());
       components.Add(ComponentType.ReadWrite<LabelExtents>());

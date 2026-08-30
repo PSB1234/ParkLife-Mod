@@ -44,7 +44,7 @@ namespace ParkLife.Systems
       }
 
       ParkLifePrefab parkPrefab = ScriptableObject.CreateInstance<ParkLifePrefab>();
-      parkPrefab.name = "ParkLife Park Area";
+      parkPrefab.name = "Park Area";
       parkPrefab.m_Color = new Color(0.35f, 0.72f, 0.40f, 1f);
       parkPrefab.m_EdgeColor = new Color(0.55f, 0.90f, 0.56f, 1f);
       parkPrefab.m_SelectionColor = new Color(0.42f, 0.86f, 0.47f, 1f);
@@ -74,9 +74,9 @@ namespace ParkLife.Systems
       parkUI.LateInitialize(EntityManager, parkPrefabEntity);
 
       // AreaToolSystem reads AreaGeometryData from the prefab while it builds
-      // the dotted polygon preview. Runtime-created prefabs start with the
-      // default AreaType.Lot value, so copy the District prefab's geometry
-      // settings to make ParkLife use the district-style area drawing rules.
+      // the dotted polygon preview. Runtime-created prefabs start as lots, so
+      // copy the District prefab's geometry settings for district-style area
+      // drawing and editing.
       Entity districtPrefabEntity = m_PrefabSystem.GetEntity(districtPrefab);
       if (EntityManager.HasComponent<AreaGeometryData>(districtPrefabEntity) &&
           EntityManager.HasComponent<AreaGeometryData>(parkPrefabEntity))

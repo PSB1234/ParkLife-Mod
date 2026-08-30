@@ -2,6 +2,7 @@ using Colossal.Logging;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
+using HarmonyLib;
 using ParkLife.Systems;
 
 namespace ParkLife
@@ -9,9 +10,14 @@ namespace ParkLife
   public class Mod : IMod
   {
     public static ILog log = LogManager.GetLogger($"{nameof(ParkLife)}.{nameof(Mod)}").SetShowsErrorsInUI(false);
-    public void OnLoad(UpdateSystem updateSystem)
-    {
-      log.Info(nameof(OnLoad));
+    private Harmony m_Harmony;
+
+  public void OnLoad(UpdateSystem updateSystem)
+  {
+    log.Info(nameof(OnLoad));
+    GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN());
+    m_Harmony = new Harmony("ParkLife.SelectedInfo");
+    m_Harmony.PatchAll();
 
       if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
         log.Info($"Current mod asset at {asset.path}");
@@ -24,6 +30,7 @@ namespace ParkLife
 
     public void OnDispose()
     {
+      m_Harmony?.UnpatchAll("ParkLife.SelectedInfo");
       log.Info(nameof(OnDispose));
     }
   }
